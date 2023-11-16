@@ -7,12 +7,10 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
-import org.apache.kafka.streams.Topology;
 
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
-
 @Slf4j
 public class GreetingsStreamApp {
 
@@ -23,10 +21,14 @@ public class GreetingsStreamApp {
         properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 
-        createTopics(properties, List.of(GreetingsTopology.GREETINGS, GreetingsTopology.GREETINGS_UPPERCASE));
+        //createTopics(properties, List.of(GreetingsTopology.GREETINGS, GreetingsTopology.GREETINGS_UPPERCASE)); RUN Just the first time
         var greetingsTopology = GreetingsTopology.buildTopology();
 
-        try (var kafkaStream = new KafkaStreams(greetingsTopology, properties)) {
+        var kafkaStream = new KafkaStreams(greetingsTopology, properties);
+
+        Runtime.getRuntime().addShutdownHook(new Thread(kafkaStream::close));
+
+        try  {
             kafkaStream.start();
         } catch (Exception e) {
             log.error("Failed to start the stream.", e);
