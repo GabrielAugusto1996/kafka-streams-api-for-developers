@@ -5,7 +5,10 @@ import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
+import org.apache.kafka.streams.kstream.Printed;
 import org.apache.kafka.streams.kstream.Produced;
+
+import static org.apache.kafka.streams.kstream.Printed.toSysOut;
 
 public class GreetingsTopology {
 
@@ -19,10 +22,15 @@ public class GreetingsTopology {
         KStream<String, String> greetingsStream = streamsBuilder
                 .stream(GREETINGS, Consumed.with(Serdes.String(), Serdes.String()));
 
-        KStream<String, String> modifyStream = greetingsStream
+        greetingsStream.print(Printed.<String, String>toSysOut().withLabel("greetingsStream"));
+
+        KStream<String, String> modifiedStream = greetingsStream
                 .mapValues((readOnlyKey, value) -> value.toUpperCase());
 
-        modifyStream
+        modifiedStream.print(Printed.<String, String>toSysOut().withLabel("modifiedStream"));
+
+
+        modifiedStream
                 .to(GREETINGS_UPPERCASE, Produced.with(Serdes.String(), Serdes.String()));
 
         return streamsBuilder.build();
