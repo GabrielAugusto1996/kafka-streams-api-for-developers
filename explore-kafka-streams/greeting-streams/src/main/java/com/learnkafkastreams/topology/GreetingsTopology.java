@@ -9,6 +9,10 @@ import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Printed;
 import org.apache.kafka.streams.kstream.Produced;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static org.apache.kafka.streams.kstream.Printed.toSysOut;
 
 public class GreetingsTopology {
@@ -26,10 +30,19 @@ public class GreetingsTopology {
         greetingsStream.print(Printed.<String, String>toSysOut().withLabel("greetingsStream"));
 
         KStream<String, String> modifiedStream = greetingsStream
-                .filter((key, value) -> value.length()<5)
-                .filterNot((key, value) -> value.length()<5)
-                .map((key, value) -> KeyValue.pair(key.toUpperCase(), value.toUpperCase())) //Convert key and value
-                .mapValues((readOnlyKey, value) -> value.toUpperCase()); //Convert just the value
+                //.filter((key, value) -> value.length()<5)
+                //.filterNot((key, value) -> value.length()<5)
+                //.map((key, value) -> KeyValue.pair(key.toUpperCase(), value.toUpperCase())) //Convert key and value
+                //.mapValues((readOnlyKey, value) -> value.toUpperCase()); //Convert just the value
+                        .flatMap((key, value) -> {
+                            List<String> newValues = Arrays.asList(value.split(""));
+
+
+                            return newValues
+                                    .stream()
+                                    .map(newValue -> KeyValue.pair(key, newValue.toUpperCase()))
+                                    .collect(Collectors.toList());
+                        });
 
         modifiedStream.print(Printed.<String, String>toSysOut().withLabel("modifiedStream"));
 

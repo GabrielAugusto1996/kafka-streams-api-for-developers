@@ -133,3 +133,8 @@ java -jar orders-streams-app/build/libs/orders-streams-app-0.0.1-SNAPSHOT.jar
 ```
 java -jar -Dserver.port=8081 orders-streams-app/build/libs/orders-streams-app-0.0.1-SNAPSHOT.jar
 ```
+
+### Annotations
+
+FlatMapValues can´t change the key, FlatMap can change the key.
+Map is used to transform a single element, while FlatMap is used to transform multiple elements.
