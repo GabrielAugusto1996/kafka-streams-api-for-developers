@@ -3,13 +3,19 @@ package com.learnkafkastreams.launcher;
 import com.learnkafkastreams.topology.GreetingsTopology;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.ListTopicsOptions;
+import org.apache.kafka.clients.admin.ListTopicsResult;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 @Slf4j
 public class GreetingsStreamApp {
@@ -20,8 +26,9 @@ public class GreetingsStreamApp {
         properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "greetings-app");
         properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.StringSerde.class);
+        properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.StringSerde.class);
 
-        //createTopics(properties, List.of(GreetingsTopology.GREETINGS, GreetingsTopology.GREETINGS_UPPERCASE)); RUN Just the first time
         var greetingsTopology = GreetingsTopology.buildTopology();
 
         var kafkaStream = new KafkaStreams(greetingsTopology, properties);
@@ -35,13 +42,14 @@ public class GreetingsStreamApp {
         }
     }
 
-    private static void createTopics(Properties config, List<String> greetings) {
+    private static void createTopics(Properties config, List<String> topics) {
 
         AdminClient admin = AdminClient.create(config);
+
         var partitions = 1;
         short replication  = 1;
 
-        var newTopics = greetings
+        var newTopics = topics
                 .stream()
                 .map(topic ->{
                     return new NewTopic(topic, partitions, replication);

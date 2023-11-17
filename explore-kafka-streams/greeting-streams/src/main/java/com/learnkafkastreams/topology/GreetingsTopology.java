@@ -15,17 +15,28 @@ public class GreetingsTopology {
 
     public static final String GREETINGS = "greetings";
     public static final String GREETINGS_UPPERCASE = "greetings_uppercase";
+    public static final String GREETINGS_SPANISH = "greetings_spanish";
 
     public static Topology buildTopology() {
 
         StreamsBuilder streamsBuilder = new StreamsBuilder();
 
         KStream<String, String> greetingsStream = streamsBuilder
-                .stream(GREETINGS, Consumed.with(Serdes.String(), Serdes.String()));
+                .stream(GREETINGS
+                        // Consumed.with(Serdes.String(), Serdes.String())
+                );
 
-        greetingsStream.print(Printed.<String, String>toSysOut().withLabel("greetingsStream"));
+        KStream<String, String> greetingsSpanishStream = streamsBuilder
+                .stream(GREETINGS_SPANISH
+                        // Consumed.with(Serdes.String(), Serdes.String())
+                );
 
-        KStream<String, String> modifiedStream = greetingsStream
+        KStream<String, String> mergeStream = greetingsStream
+                .merge(greetingsSpanishStream);
+
+        mergeStream.print(Printed.<String, String>toSysOut().withLabel("mergeStream"));
+
+        KStream<String, String> modifiedStream = mergeStream
                 .filter((key, value) -> value.length()>1)
                 .peek((key, value) -> log.info("After Filter, Key; {}, value: {}", key, value)) //It´s used for logging or debug operators
                 //.filterNot((key, value) -> value.length()<5)
