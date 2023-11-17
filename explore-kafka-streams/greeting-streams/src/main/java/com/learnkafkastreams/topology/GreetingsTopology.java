@@ -25,6 +25,8 @@ public class GreetingsTopology {
         greetingsStream.print(Printed.<String, String>toSysOut().withLabel("greetingsStream"));
 
         KStream<String, String> modifiedStream = greetingsStream
+                .filter((key, value) -> value.length()<5)
+                .filterNot((key, value) -> value.length()<5)
                 .mapValues((readOnlyKey, value) -> value.toUpperCase());
 
         modifiedStream.print(Printed.<String, String>toSysOut().withLabel("modifiedStream"));
