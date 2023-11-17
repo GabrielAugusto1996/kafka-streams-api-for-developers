@@ -1,5 +1,6 @@
 package com.learnkafkastreams.topology;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -9,12 +10,7 @@ import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Printed;
 import org.apache.kafka.streams.kstream.Produced;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.apache.kafka.streams.kstream.Printed.toSysOut;
-
+@Slf4j
 public class GreetingsTopology {
 
     public static final String GREETINGS = "greetings";
@@ -30,11 +26,13 @@ public class GreetingsTopology {
         greetingsStream.print(Printed.<String, String>toSysOut().withLabel("greetingsStream"));
 
         KStream<String, String> modifiedStream = greetingsStream
-                //.filter((key, value) -> value.length()<5)
+                .filter((key, value) -> value.length()>1)
+                .peek((key, value) -> log.info("After Filter, Key; {}, value: {}", key, value)) //It´s used for logging or debug operators
                 //.filterNot((key, value) -> value.length()<5)
-                //.map((key, value) -> KeyValue.pair(key.toUpperCase(), value.toUpperCase())) //Convert key and value
+                .map((key, value) -> KeyValue.pair(key.toUpperCase(), value.toUpperCase()))
+                .peek((key, value) -> log.info("After Map, Key; {}, value: {}", key, value));
                 //.mapValues((readOnlyKey, value) -> value.toUpperCase()); //Convert just the value
-                        .flatMap((key, value) -> {
+                        /*.flatMap((key, value) -> {
                             List<String> newValues = Arrays.asList(value.split(""));
 
 
@@ -42,7 +40,7 @@ public class GreetingsTopology {
                                     .stream()
                                     .map(newValue -> KeyValue.pair(key, newValue.toUpperCase()))
                                     .collect(Collectors.toList());
-                        });
+                        });*/
 
         modifiedStream.print(Printed.<String, String>toSysOut().withLabel("modifiedStream"));
 
