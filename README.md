@@ -138,3 +138,4 @@ java -jar -Dserver.port=8081 orders-streams-app/build/libs/orders-streams-app-0.
 
 FlatMapValues can´t change the key, FlatMap can change the key.
 Map is used to transform a single element, while FlatMap is used to transform multiple elements.
+Merge operator can combine more than one kafka stream and convert into a single kafka stream
