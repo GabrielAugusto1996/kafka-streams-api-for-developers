@@ -1,5 +1,7 @@
 package com.learnkafkastreams.topology;
 
+import com.learnkafkastreams.domain.Greeting;
+import com.learnkafkastreams.serds.SerdesFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
@@ -21,26 +23,26 @@ public class GreetingsTopology {
 
         StreamsBuilder streamsBuilder = new StreamsBuilder();
 
-        KStream<String, String> greetingsStream = streamsBuilder
-                .stream(GREETINGS
-                        // Consumed.with(Serdes.String(), Serdes.String())
+        KStream<String, Greeting> greetingsStream = streamsBuilder
+                .stream(GREETINGS,
+                         Consumed.with(Serdes.String(), SerdesFactory.Greeting())
                 );
 
-        KStream<String, String> greetingsSpanishStream = streamsBuilder
-                .stream(GREETINGS_SPANISH
-                        // Consumed.with(Serdes.String(), Serdes.String())
+        KStream<String, Greeting> greetingsSpanishStream = streamsBuilder
+                .stream(GREETINGS_SPANISH,
+                         Consumed.with(Serdes.String(), SerdesFactory.Greeting())
                 );
 
-        KStream<String, String> mergeStream = greetingsStream
+        KStream<String, Greeting> mergeStream = greetingsStream
                 .merge(greetingsSpanishStream);
 
-        mergeStream.print(Printed.<String, String>toSysOut().withLabel("mergeStream"));
+        mergeStream.print(Printed.<String, Greeting>toSysOut().withLabel("mergeStream"));
 
-        KStream<String, String> modifiedStream = mergeStream
-                .filter((key, value) -> value.length()>1)
+        KStream<String, Greeting> modifiedStream = mergeStream
+                .filter((key, value) -> value.getMessage().length()>1)
                 .peek((key, value) -> log.info("After Filter, Key; {}, value: {}", key, value)) //It´s used for logging or debug operators
                 //.filterNot((key, value) -> value.length()<5)
-                .map((key, value) -> KeyValue.pair(key.toUpperCase(), value.toUpperCase()))
+                .map((key, value) -> KeyValue.pair(key, new Greeting(value.getMessage().toUpperCase(), value.getTimeStamp())))
                 .peek((key, value) -> log.info("After Map, Key; {}, value: {}", key, value));
                 //.mapValues((readOnlyKey, value) -> value.toUpperCase()); //Convert just the value
                         /*.flatMap((key, value) -> {
@@ -53,11 +55,11 @@ public class GreetingsTopology {
                                     .collect(Collectors.toList());
                         });*/
 
-        modifiedStream.print(Printed.<String, String>toSysOut().withLabel("modifiedStream"));
+        modifiedStream.print(Printed.<String, Greeting>toSysOut().withLabel("modifiedStream"));
 
 
         modifiedStream
-                .to(GREETINGS_UPPERCASE, Produced.with(Serdes.String(), Serdes.String()));
+                .to(GREETINGS_UPPERCASE, Produced.with(Serdes.String(), SerdesFactory.Greeting()));
 
         return streamsBuilder.build();
     }
