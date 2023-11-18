@@ -65,6 +65,8 @@ docker exec -it broker bash
 
 ```
 kafka-console-consumer --bootstrap-server localhost:9092 --topic greetings_uppercase
+
+kafka-console-consumer --bootstrap-server localhost:9092 --topic orders
 ```
 
 - Command to consume with Key
