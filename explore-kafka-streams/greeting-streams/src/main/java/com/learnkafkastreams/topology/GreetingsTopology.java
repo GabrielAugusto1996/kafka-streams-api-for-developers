@@ -25,6 +25,48 @@ public class GreetingsTopology {
 
         KStream<String, Greeting> greetingsStream = streamsBuilder
                 .stream(GREETINGS,
+                        Consumed.with(Serdes.String(), SerdesFactory.Greeting())
+                );
+
+        KStream<String, Greeting> greetingsSpanishStream = streamsBuilder
+                .stream(GREETINGS_SPANISH,
+                        Consumed.with(Serdes.String(), SerdesFactory.Greeting())
+                );
+
+        KStream<String, Greeting> mergeStream = greetingsStream
+                .merge(greetingsSpanishStream);
+
+        mergeStream.print(Printed.<String, Greeting>toSysOut().withLabel("mergeStream"));
+
+        KStream<String, Greeting> modifiedStream = exploreErrors(mergeStream);
+
+        modifiedStream.print(Printed.<String, Greeting>toSysOut().withLabel("modifiedStream"));
+
+
+        modifiedStream
+                .to(GREETINGS_UPPERCASE, Produced.with(Serdes.String(), SerdesFactory.Greeting()));
+
+        return streamsBuilder.build();
+    }
+
+    private static KStream<String, Greeting> exploreErrors(KStream<String, Greeting> mergeStream) {
+        return mergeStream
+                .filter((key, value) -> value.getMessage().length() > 1)
+                .mapValues((readOnlyKey, value) -> {
+                    if (value.getMessage().equals("Transient Error")) {
+                        throw new IllegalStateException(value.getMessage());
+                    }
+                    return new Greeting(value.getMessage().toUpperCase(), value.getTimeStamp());
+                });
+    }
+
+    @Deprecated
+    public static Topology buildTopologyOld() {
+
+        StreamsBuilder streamsBuilder = new StreamsBuilder();
+
+        KStream<String, Greeting> greetingsStream = streamsBuilder
+                .stream(GREETINGS,
                          Consumed.with(Serdes.String(), SerdesFactory.Greeting())
                 );
 

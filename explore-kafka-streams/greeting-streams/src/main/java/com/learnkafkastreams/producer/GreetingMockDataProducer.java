@@ -22,8 +22,9 @@ public class GreetingMockDataProducer {
                 .registerModule(new JavaTimeModule())
                 .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
-        englishGreetings(objectMapper);
-        spanishGreetings(objectMapper);
+        errorGreetings(objectMapper);
+//        englishGreetings(objectMapper);
+//        spanishGreetings(objectMapper);
 
     }
 
@@ -52,6 +53,22 @@ public class GreetingMockDataProducer {
                 new Greeting("¡Hola, buenas noches!", LocalDateTime.now())
         );
         spanishGreetings
+                .forEach(greeting -> {
+                    try {
+                        var greetingJSON = objectMapper.writeValueAsString(greeting);
+                        var recordMetaData = publishMessageSync(GREETINGS, null, greetingJSON);
+                        log.info("Published the alphabet message : {} ", recordMetaData);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+    }
+
+    private static void errorGreetings(ObjectMapper objectMapper) {
+        var errorScenerario = List.of(
+                new Greeting("Transient Error", LocalDateTime.now())
+        );
+        errorScenerario
                 .forEach(greeting -> {
                     try {
                         var greetingJSON = objectMapper.writeValueAsString(greeting);

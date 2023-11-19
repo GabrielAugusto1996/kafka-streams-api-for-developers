@@ -1,23 +1,19 @@
 package com.learnkafkastreams.launcher;
 
 import com.learnkafkastreams.exceptionhandler.StreamsDeserializationExceptionHandler;
+import com.learnkafkastreams.exceptionhandler.StreamsProcessorCustomExceptionHandler;
+import com.learnkafkastreams.exceptionhandler.StreamsSerializationExceptionHandler;
 import com.learnkafkastreams.topology.GreetingsTopology;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.ListTopicsOptions;
-import org.apache.kafka.clients.admin.ListTopicsResult;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
-import org.apache.kafka.streams.errors.LogAndContinueExceptionHandler;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 @Slf4j
 public class GreetingsStreamApp {
@@ -32,10 +28,13 @@ public class GreetingsStreamApp {
         properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.StringSerde.class);
         properties.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, "2");
         properties.put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG, StreamsDeserializationExceptionHandler.class); //It will not stop the application if it has an exception in Deserialization, Default Class: LogAndFail (Stop Application)
+        properties.put(StreamsConfig.DEFAULT_PRODUCTION_EXCEPTION_HANDLER_CLASS_CONFIG, StreamsSerializationExceptionHandler.class); //It will not stop the application if it has an exception in Serialization, Default Class: LogAndFail (Stop Application)
 
         var greetingsTopology = GreetingsTopology.buildTopology();
 
         var kafkaStream = new KafkaStreams(greetingsTopology, properties);
+
+        kafkaStream.setUncaughtExceptionHandler(new StreamsProcessorCustomExceptionHandler()); // It will change the Application behavior for the Topology
 
         Runtime.getRuntime().addShutdownHook(new Thread(kafkaStream::close));
 
