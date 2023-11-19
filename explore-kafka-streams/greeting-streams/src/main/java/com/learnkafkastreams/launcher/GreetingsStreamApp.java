@@ -1,5 +1,6 @@
 package com.learnkafkastreams.launcher;
 
+import com.learnkafkastreams.exceptionhandler.StreamsDeserializationExceptionHandler;
 import com.learnkafkastreams.topology.GreetingsTopology;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
@@ -30,7 +31,7 @@ public class GreetingsStreamApp {
         properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.StringSerde.class);
         properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.StringSerde.class);
         properties.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, "2");
-        properties.put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_DOC, LogAndContinueExceptionHandler.class); //It will not stop the application if it has an exception in Deserialization
+        properties.put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG, StreamsDeserializationExceptionHandler.class); //It will not stop the application if it has an exception in Deserialization, Default Class: LogAndFail (Stop Application)
 
         var greetingsTopology = GreetingsTopology.buildTopology();
 
