@@ -140,4 +140,14 @@ java -jar -Dserver.port=8081 orders-streams-app/build/libs/orders-streams-app-0.
 
 FlatMapValues can´t change the key, FlatMap can change the key.
 Map is used to transform a single element, while FlatMap is used to transform multiple elements.
-Merge operator can combine more than one kafka stream and convert into a single kafka stream
+Merge operator can combine more than one kafka stream and convert into a single kafka stream.
+
+---
+KTable is also known as update-stream or a changed log, KTable represents the latest record for a given key in Kafka Records, for example:
+
+1 - A,Abacaxi, 2 - A,Lasanha, 3 - B,Pera, 4 - B,Batata;
+
+KTable representation: A,Lasanha - B,Batata
+
+Any record without key is ignored for the KTable;
+

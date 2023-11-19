@@ -13,9 +13,9 @@ public class WordsProducer {
 
         var key = "A";
 
-        var word = "Apple";
-        var word1 = "Alligator";
-        var word2 = "Ambulance";
+        var word = "Abacaxi";
+        var word1 = "Ambulancia";
+        var word2 = "Lasanha";
 
         var recordMetaData = publishMessageSync(WORDS, key,word);
         log.info("Published the alphabet message : {} ", recordMetaData);
@@ -28,8 +28,8 @@ public class WordsProducer {
 
         var bKey = "B";
 
-        var bWord1 = "Bus";
-        var bWord2 = "Baby";
+        var bWord1 = "Pera";
+        var bWord2 = "Batata";
         var recordMetaData3 = publishMessageSync(WORDS, bKey,bWord1);
         log.info("Published the alphabet message : {} ", recordMetaData2);
 
