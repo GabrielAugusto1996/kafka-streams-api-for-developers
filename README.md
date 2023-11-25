@@ -151,3 +151,5 @@ KTable representation: A,Lasanha - B,Batata
 
 Any record without key is ignored for the KTable;
 
+Use GlobalKTable when you have a small of keys to be saved, and KTable when you have a million of keys to be saved.
+
