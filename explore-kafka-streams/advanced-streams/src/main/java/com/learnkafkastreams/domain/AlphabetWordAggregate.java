@@ -16,9 +16,11 @@ public record AlphabetWordAggregate(String key,
     }
 
 
-    public AlphabetWordAggregate updateNewEvents(String key, String neVwalue){
+    public AlphabetWordAggregate updateNewEvents(String key, String newValue){
+        var runningCount = this.runningCount+1;
+        valueList.add(newValue);
 
-        return null;
+        return new AlphabetWordAggregate(key, valueList, runningCount);
     }
 
 

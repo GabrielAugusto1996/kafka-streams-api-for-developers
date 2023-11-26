@@ -165,3 +165,6 @@ Count: This is used to count the number of different events that share the same 
 
 Reduce: This operator is used to reduce multiple values to a single value that shares the same key.
   You need to concatenate each event using a hyphen(-).
+
+Aggregate: This operator is similar to **reducer** operator.
+ The aggregate type can be different by Kafka Records.

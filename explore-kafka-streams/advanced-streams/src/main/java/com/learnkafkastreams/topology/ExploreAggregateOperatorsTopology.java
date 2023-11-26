@@ -1,16 +1,23 @@
 package com.learnkafkastreams.topology;
 
+import com.learnkafkastreams.domain.AlphabetWordAggregate;
+import com.learnkafkastreams.serdes.SerdesFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.Topology;
+import org.apache.kafka.streams.kstream.Aggregator;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.Grouped;
+import org.apache.kafka.streams.kstream.Initializer;
 import org.apache.kafka.streams.kstream.KGroupedStream;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KTable;
+import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.Named;
 import org.apache.kafka.streams.kstream.Printed;
+import org.apache.kafka.streams.state.KeyValueStore;
 
 @Slf4j
 public class ExploreAggregateOperatorsTopology {
@@ -34,8 +41,30 @@ public class ExploreAggregateOperatorsTopology {
 
         exploreCount(groupStream);
         exploreReduce(groupStream);
+        exploreAggregate(groupStream);
 
         return streamsBuilder.build();
+    }
+
+    private static void exploreAggregate(KGroupedStream<String, String> groupStream) {
+        Initializer<AlphabetWordAggregate> alphabetWordAggregateInitializer = AlphabetWordAggregate::new;
+
+        Aggregator<String, String, AlphabetWordAggregate> aggregator
+                = (key, value, aggregate) -> aggregate.updateNewEvents(key, value);
+
+
+        var aggregatedStream = groupStream
+                .aggregate(alphabetWordAggregateInitializer,
+                        aggregator,
+                        Materialized.<String, AlphabetWordAggregate, KeyValueStore<Bytes, byte[]>>
+                                        as("aggregated-store")
+                                .withKeySerde(Serdes.String())
+                                .withValueSerde(SerdesFactory.alphabetWordAggregate())
+                );
+
+        aggregatedStream
+                .toStream()
+                .print(Printed.<String,AlphabetWordAggregate>toSysOut().withLabel("aggregated-words"));
     }
 
     private static void exploreReduce(KGroupedStream<String, String> groupStream) {
