@@ -29,12 +29,26 @@ public class ExploreAggregateOperatorsTopology {
                 .print(Printed.<String, String>toSysOut().withLabel(AGGREGATE));
 
         var groupStream = inputStream
-                //.groupByKey(Grouped.with(Serdes.String(), Serdes.String()));
-                        .groupBy((key, value) -> value, Grouped.with(Serdes.String(), Serdes.String())); //We can use this method to change the key value
+                .groupByKey(Grouped.with(Serdes.String(), Serdes.String()));
+                        // .groupBy((key, value) -> value, Grouped.with(Serdes.String(), Serdes.String())); We can use this method to change the key value
 
         exploreCount(groupStream);
+        exploreReduce(groupStream);
 
         return streamsBuilder.build();
+    }
+
+    private static void exploreReduce(KGroupedStream<String, String> groupStream) {
+        KTable<String, String> reduce = groupStream
+                .reduce((value1, value2) -> {
+                    log.info("Value 1: {}, Value 2: {}", value1, value2);
+
+                    return value1.toUpperCase() + value2.toUpperCase();
+                });
+
+        reduce
+                .toStream()
+                .print(Printed.<String, String>toSysOut().withLabel("reduce-words"));
     }
 
     private static void exploreCount(KGroupedStream<String, String> groupStream) {

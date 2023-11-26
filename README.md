@@ -158,7 +158,10 @@ Use GlobalKTable when you have a small of keys to be saved, and KTable when you 
 Agregation operations: count, reduce and aggregate.
 Rules about agregation:
 - Key is mandatory
+- Group operator is always necessary
 - It store all of the data by key inside an internal topic, for example: aggregate-KSTREAM-AGGREGATE-STATE-STORE-0000000002-changelog
 
 Count: This is used to count the number of different events that share the same key.
 
+Reduce: This operator is used to reduce multiple values to a single value that shares the same key.
+  You need to concatenate each event using a hyphen(-).
