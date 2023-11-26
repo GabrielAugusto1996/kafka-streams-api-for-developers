@@ -153,3 +153,12 @@ Any record without key is ignored for the KTable;
 
 Use GlobalKTable when you have a small of keys to be saved, and KTable when you have a million of keys to be saved.
 
+----
+
+Agregation operations: count, reduce and aggregate.
+Rules about agregation:
+- Key is mandatory
+- It store all of the data by key inside an internal topic, for example: aggregate-KSTREAM-AGGREGATE-STATE-STORE-0000000002-changelog
+
+Count: This is used to count the number of different events that share the same key.
+

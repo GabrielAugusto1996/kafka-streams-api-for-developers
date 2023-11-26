@@ -25,7 +25,7 @@ public class AggregatingStreamPlayGroundApp {
       var kTableTopology = ExploreAggregateOperatorsTopology.build();
 
         Properties config = new Properties();
-        config.put(StreamsConfig.APPLICATION_ID_CONFIG, "stateful-operation"); // consumer group
+        config.put(StreamsConfig.APPLICATION_ID_CONFIG, "aggregate"); // consumer group
         config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         config.put(DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
@@ -34,7 +34,7 @@ public class AggregatingStreamPlayGroundApp {
         createTopics(config, List.of(AGGREGATE));
          var kafkaStreams = new KafkaStreams(kTableTopology, config);
 
-       // Runtime.getRuntime().addShutdownHook(new Thread(kafkaStreams::close));
+        Runtime.getRuntime().addShutdownHook(new Thread(kafkaStreams::close));
 
         log.info("Starting Greeting streams");
         kafkaStreams.start();
