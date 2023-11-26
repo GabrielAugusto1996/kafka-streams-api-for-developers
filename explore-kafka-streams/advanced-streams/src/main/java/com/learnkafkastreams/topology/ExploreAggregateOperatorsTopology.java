@@ -46,6 +46,30 @@ public class ExploreAggregateOperatorsTopology {
         return streamsBuilder.build();
     }
 
+    private static void exploreCount(KGroupedStream<String, String> groupStream) {
+        KTable<String, Long> countByAlphabet = groupStream
+                .count(Named.as(COUNT_PER_ALPHABETIC), Materialized.as(COUNT_PER_ALPHABETIC));
+
+        countByAlphabet
+                .toStream()
+                .print(Printed.<String, Long>toSysOut().withLabel(COUNT_PER_ALPHABETIC));
+    }
+
+    private static void exploreReduce(KGroupedStream<String, String> groupStream) {
+        KTable<String, String> reduce = groupStream
+                .reduce((value1, value2) -> {
+                    log.info("Value 1: {}, Value 2: {}", value1, value2);
+
+                    return value1.toUpperCase() + value2.toUpperCase();
+                }, Materialized.<String, String, KeyValueStore<Bytes, byte[]>>as("reduce-words")
+                        .withKeySerde(Serdes.String())
+                        .withValueSerde(Serdes.String()));
+
+        reduce
+                .toStream()
+                .print(Printed.<String, String>toSysOut().withLabel("reduce-words"));
+    }
+
     private static void exploreAggregate(KGroupedStream<String, String> groupStream) {
         Initializer<AlphabetWordAggregate> alphabetWordAggregateInitializer = AlphabetWordAggregate::new;
 
@@ -65,28 +89,6 @@ public class ExploreAggregateOperatorsTopology {
         aggregatedStream
                 .toStream()
                 .print(Printed.<String,AlphabetWordAggregate>toSysOut().withLabel("aggregated-words"));
-    }
-
-    private static void exploreReduce(KGroupedStream<String, String> groupStream) {
-        KTable<String, String> reduce = groupStream
-                .reduce((value1, value2) -> {
-                    log.info("Value 1: {}, Value 2: {}", value1, value2);
-
-                    return value1.toUpperCase() + value2.toUpperCase();
-                });
-
-        reduce
-                .toStream()
-                .print(Printed.<String, String>toSysOut().withLabel("reduce-words"));
-    }
-
-    private static void exploreCount(KGroupedStream<String, String> groupStream) {
-        KTable<String, Long> countByAlphabet = groupStream
-                .count(Named.as(COUNT_PER_ALPHABETIC));
-
-        countByAlphabet
-                .toStream()
-                .print(Printed.<String, Long>toSysOut().withLabel(COUNT_PER_ALPHABETIC));
     }
 
 }
